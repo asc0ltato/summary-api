@@ -26,11 +26,19 @@ export class WebSocketClientService {
 
         this.isConnecting = true;
         let wsUrl = appConfig.mainApi.baseUrl;
-        if (wsUrl.includes('localhost') || wsUrl.includes('127.0.0.1')) {
-            wsUrl = wsUrl.replace('http://', 'ws://').replace('https://', 'wss://');
-        } else {
-            wsUrl = wsUrl.replace('http://backend:', 'ws://backend:').replace('https://backend:', 'wss://backend:');
+        
+        // Преобразуем HTTP/HTTPS URL в WebSocket URL
+        if (wsUrl.startsWith('https://')) {
+            wsUrl = wsUrl.replace('https://', 'wss://');
+        } else if (wsUrl.startsWith('http://')) {
+            wsUrl = wsUrl.replace('http://', 'ws://');
         }
+        
+        // Для Docker внутренних сетей заменяем backend: на backend:
+        if (wsUrl.includes('backend:')) {
+            // Уже правильный формат для Docker
+        }
+        
         const wsPath = '/ws/approved-summaries';
         const fullUrl = `${wsUrl}${wsPath}`;
 
@@ -129,4 +137,3 @@ export class WebSocketClientService {
         }
     }
 }
-
