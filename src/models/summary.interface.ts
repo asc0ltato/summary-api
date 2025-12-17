@@ -1,7 +1,7 @@
 export interface ISummary {
     summaryId: string;
     emailGroupId: string;
-    aiAnalysis: ShipmentRequest;
+    shipment_data: ShipmentRequest;
     summary: string;
     status: 'pending' | 'approved' | 'rejected' | 'processing' | 'failed';
     createdAt: string;
@@ -20,9 +20,7 @@ export interface IEmailGroup {
 
 export type ShipmentRequest = {
     name: string;
-    is_ai_generated: boolean;
-    upload_id: string;
-    pre_shipments: Array<{
+    shipment_details: Array<{
         shipping_date_from: string | null;
         shipping_date_to: string | null;
         shipping_time_from: string | null;
@@ -40,7 +38,6 @@ export type ShipmentRequest = {
 };
 
 export type ShipmentAddress = {
-    id: number;
     country: string | null;
     city: string | null;
     zipcode: string | null;
@@ -52,24 +49,11 @@ export type ShipmentAddress = {
 };
 
 export type ShipmentContent = {
-    type: {
-        id: number;
-        name: string;
-        width: number;
-        length: number;
-        height: number;
-        height_edit: boolean;
-        width_edit: boolean;
-        length_edit: boolean;
-        dimension_unit: boolean;
-        shortname: boolean;
-        is_container: boolean;
-    };
+    name: string;
     quantity: number;
 };
 
 export type ShipmentMode = {
-    id: number;
     name: string;
 };
 

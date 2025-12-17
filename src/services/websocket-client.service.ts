@@ -5,7 +5,7 @@ import { ShipmentRequest } from '../models/summary.interface';
 
 interface ApprovedSummary {
     emailGroupId: string;
-    aiAnalysis: Omit<ShipmentRequest, 'is_ai_generated'>;
+    shipment_data: ShipmentRequest;
 }
 
 export class WebSocketClientService {
@@ -55,7 +55,7 @@ export class WebSocketClientService {
                     if (message.type === 'approved_summary' && message.data) {
                         const summary: ApprovedSummary = {
                             emailGroupId: message.data.emailGroupId,
-                            aiAnalysis: message.data.aiAnalysis
+                            shipment_data: message.data.shipment_data
                         };
                         
                         this.cache.set(summary.emailGroupId, summary);

@@ -12,7 +12,7 @@ export class SummaryService {
         this.wsClient = new WebSocketClientService();
     }
 
-    async getApprovedSummaries(): Promise<IApiResponse<Array<{ aiAnalysis: Omit<ShipmentRequest, 'is_ai_generated'> }>>> {
+    async getApprovedSummaries(): Promise<IApiResponse<Array<{ shipment_data: ShipmentRequest }>>> {
         try {
             const cachedSummaries = this.wsClient.getCachedSummaries();
             
@@ -20,7 +20,7 @@ export class SummaryService {
                 logger.info(`Returning ${cachedSummaries.length} approved summaries from WebSocket cache`);
                 return {
                     success: true,
-                    data: cachedSummaries.map(s => ({ aiAnalysis: s.aiAnalysis })),
+                    data: cachedSummaries.map(s => ({ shipment_data: (s as any).shipment_data })),
                     message: `Found ${cachedSummaries.length} approved summaries (from WebSocket cache)`
                 };
             }
@@ -36,38 +36,35 @@ export class SummaryService {
 
             const summaries = response.data.emailGroups
                 .map((emailGroup: IEmailGroup) => {
-                    let aiAnalysis: ShipmentRequest | null = null;
+                    let shipmentData: ShipmentRequest | null = null;
                     
                     if (emailGroup.summary && emailGroup.summary.status === 'approved') {
-                        aiAnalysis = emailGroup.summary.aiAnalysis;
+                        shipmentData = (emailGroup.summary as any).shipment_data;
                     } else if (emailGroup.summaries) {
                         const approvedSummary = emailGroup.summaries.find(s => s.status === 'approved');
-                        aiAnalysis = approvedSummary?.aiAnalysis || null;
+                        shipmentData = approvedSummary ? (approvedSummary as any).shipment_data : null;
                     }
                     
-                    if (!aiAnalysis) {
+                    if (!shipmentData) {
                         return null;
                     }
                     
-                    // Убираем is_ai_generated из aiAnalysis
-                    const { is_ai_generated, ...aiAnalysisWithoutFlag } = aiAnalysis;
-                    
                     return {
                         emailGroupId: emailGroup.emailGroupId,
-                        aiAnalysis: aiAnalysisWithoutFlag
+                        shipment_data: shipmentData
                     };
                 })
-                .filter((item: { emailGroupId: string; aiAnalysis: Omit<ShipmentRequest, 'is_ai_generated'> } | null) => item !== null);
+                .filter((item: { emailGroupId: string; shipment_data: ShipmentRequest } | null) => item !== null);
 
             logger.info(`Retrieved ${summaries.length} approved summaries`);
 
             if (summaries.length > 0) {
-                this.wsClient.updateCache(summaries);
+                this.wsClient.updateCache(summaries as any);
             }
 
             return {
                 success: true,
-                data: summaries.map((s: { emailGroupId: string; aiAnalysis: Omit<ShipmentRequest, 'is_ai_generated'> }) => ({ aiAnalysis: s.aiAnalysis })),
+                data: summaries.map((s: { emailGroupId: string; shipment_data: ShipmentRequest }) => ({ shipment_data: s.shipment_data })),
                 message: `Found ${summaries.length} approved summaries`
             };
 
